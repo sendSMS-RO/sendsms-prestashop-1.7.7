@@ -1,5 +1,4 @@
 <?php
-
 /**
  * NOTICE OF LICENSE
  *
@@ -615,10 +614,10 @@ class PsSendSMS extends Module
 
     public function createBatch($fileUrl)
     {
-        // $start_time = "2970-01-01 02:00:00";
-        $start_time = "";
+        $start_time = "2970-01-01 02:00:00";
+        // $start_time = "";
         $name = 'Prestashop - ' . _PS_BASE_URL_ . ' - ' . uniqid();
-        $data = 'data=' . file_get_contents($fileUrl);
+        $data = 'data=' . Tools::file_get_contents($fileUrl);
         $username = Configuration::get('PS_SENDSMS_USERNAME');
         $password = Configuration::get('PS_SENDSMS_PASSWORD');
         if (empty($username) || empty($password)) {
@@ -657,7 +656,9 @@ class PsSendSMS extends Module
         curl_setopt($curl, CURLOPT_HTTPHEADER, array("Connection: keep-alive"));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         if ($post)
+        {
             curl_setopt($curl, CURLOPT_POSTFIELDS, $post);
+        }
         $status = curl_exec($curl);
         curl_close($curl);
         $status = json_decode($status, true);
@@ -716,7 +717,7 @@ class PsSendSMS extends Module
 
     public function validatePhone($phone_number)
     {
-        if (empty($phone_number)) return '';
+        if (empty($phone_number)) {return '';}
         include 'cc.php';
         $phone_number = $this->clearPhone($phone_number);
         //Strip out leading zeros:
@@ -734,7 +735,7 @@ class PsSendSMS extends Module
         return $phone_number;
     }
 
-    function clearPhone($phone_number)
+    public function clearPhone($phone_number)
     {
         $phone_number = str_replace(['+', '-'], '', filter_var($phone_number, FILTER_SANITIZE_NUMBER_INT));
         //Strip spaces and non-numeric characters:

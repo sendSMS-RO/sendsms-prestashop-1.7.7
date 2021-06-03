@@ -1,7 +1,4 @@
 <?php
-
-use Symfony\Component\Validator\Constraints\Length;
-
 /**
  * NOTICE OF LICENSE
  *
@@ -434,7 +431,7 @@ class AdminCampaign extends ModuleAdminController
         unset($this->toolbar_btn['new']);
     }
 
-    function randomNumberSequence($requiredLength = 7, $highestDigit = 8)
+    private function randomNumberSequence($requiredLength = 7, $highestDigit = 8)
     {
         $sequence = '';
         for ($i = 0; $i < $requiredLength; ++$i) {
