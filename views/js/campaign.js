@@ -61,9 +61,10 @@ $(document).ready(function() {
         $.ajax({
             type: 'POST',
             data: {
+                sendsms_security: sendsms_security,
                 all: all,
                 content: content,
-                phones: phones
+                phones: phones,
             },
             dataType: 'json',
             success: function(data) {
