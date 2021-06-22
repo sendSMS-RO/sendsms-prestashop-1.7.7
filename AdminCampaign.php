@@ -16,14 +16,14 @@ include 'csrf.class.php';
 class AdminCampaign extends ModuleAdminController
 {
     protected $index;
-    protected $indexError;
+    public $cookieManager;
     private $csrf;
 
     public function __construct()
     {
         parent::__construct();
         $this->csrf = new Csrf();
-
+        $this->cookieManager = $this->context->cookie;
         $this->bootstrap = true;
 
         $this->context = Context::getContext();
@@ -130,10 +130,10 @@ class AdminCampaign extends ModuleAdminController
         $billingStates = array();
 
         if (Configuration::get('PS_SENDSMS_PRODUCTS')) {
-            $products = Configuration::get('PS_SENDSMS_PRODUCTS') ? explode('|', Configuration::get('PS_SENDSMS_PRODUCTS')) : array();
+            $products = Configuration::get('PS_SENDSMS_PRODUCTS') ? explode(',', Configuration::get('PS_SENDSMS_PRODUCTS')) : array();
         }
         if (Configuration::get('PS_SENDSMS_STATES')) {
-            $billingStates = Configuration::get('PS_SENDSMS_STATES') ? explode('|', Configuration::get('PS_SENDSMS_STATES')) : array();
+            $billingStates = Configuration::get('PS_SENDSMS_STATES') ? explode(',', Configuration::get('PS_SENDSMS_STATES')) : array();
         }
         $numbers = $this->filterPhones($periodStart, $periodEnd, $amount, $products, $billingStates);
 
@@ -150,11 +150,11 @@ class AdminCampaign extends ModuleAdminController
         $this->fields_value['sendsms_billing_states[]'] = $billingStates;
         $this->fields_value[$token_id] = $token_value;
 
-        $this->_getSession()->set('sendsms_period_start', $periodStart);
-        $this->_getSession()->set('sendsms_period_end', $periodEnd);
-        $this->_getSession()->set('sendsms_amount', $amount);
-        $this->_getSession()->set('sendsms_products', Configuration::get('PS_SENDSMS_PRODUCTS') ? Configuration::get('PS_SENDSMS_PRODUCTS') : array());
-        $this->_getSession()->set('sendsms_billing_states', Configuration::get('PS_SENDSMS_STATES') ? Configuration::get('PS_SENDSMS_STATES') : array());
+        $this->cookieManager->__set('sendsms_period_start', $periodStart);
+        $this->cookieManager->__set('sendsms_period_end', $periodEnd);
+        $this->cookieManager->__set('sendsms_amount', $amount);
+        $this->cookieManager->__set('sendsms_products', (Configuration::get('PS_SENDSMS_PRODUCTS') ? Configuration::get('PS_SENDSMS_PRODUCTS') : ""));
+        $this->cookieManager->__set('sendsms_billing_states', (Configuration::get('PS_SENDSMS_STATES') ? Configuration::get('PS_SENDSMS_STATES') : ""));
 
         $form1 = parent::renderForm();
 
@@ -274,18 +274,18 @@ class AdminCampaign extends ModuleAdminController
 
     public function postProcess()
     {
-        if ($this->ajax) {
+        if (Tools::getValue('method') === 'sendCampaign') {
             if ($this->csrf->checkValid(true)) {
-                $sendsms_period_start = $this->_getSession()->get('sendsms_period_start');
-                $sendsms_period_end = $this->_getSession()->get('sendsms_period_end');
-                $sendsms_amount = $this->_getSession()->get('sendsms_amount');
+                $sendsms_period_start = $this->cookieManager->__get('sendsms_period_start');
+                $sendsms_period_end = $this->cookieManager->__get('sendsms_period_end');
+                $sendsms_amount = $this->cookieManager->__get('sendsms_amount');
                 $sendsms_products = "";
                 $sendsms_billing_states = "";
-                if (!empty($this->_getSession()->get('sendsms_products'))) {
-                    $sendsms_products = explode('|', $this->_getSession()->get('sendsms_products'));
+                if (!empty($this->cookieManager->__get('sendsms_products'))) {
+                    $sendsms_products = explode(',', $this->cookieManager->__get('sendsms_products'));
                 }
-                if (!empty($this->_getSession()->get('sendsms_billing_states'))) {
-                    $sendsms_billing_states = explode('|', $this->_getSession()->get('sendsms_billing_states'));
+                if (!empty($this->cookieManager->__get('sendsms_billing_states'))) {
+                    $sendsms_billing_states = explode(',', $this->cookieManager->__get('sendsms_billing_states'));
                 }
                 $all = Tools::getValue('all');
                 $content = Tools::getValue('content');
@@ -297,7 +297,7 @@ class AdminCampaign extends ModuleAdminController
                     $this->filterPhones($sendsms_period_start, $sendsms_period_end, $sendsms_amount, $sendsms_products, $sendsms_billing_states, $phones);
                 } else {
                     if (Tools::getValue('phones') != "") {
-                        $phones = explode('|', Tools::getValue('phones', false));
+                        $phones = explode(',', Tools::getValue('phones', false));
                     }
                 }
                 if (count($phones) === 0) {
@@ -351,12 +351,12 @@ class AdminCampaign extends ModuleAdminController
                 Configuration::updateValue('PS_SENDSMS_END_PERIOD', $periodEnd, true);
                 Configuration::updateValue('PS_SENDSMS_ORDER_AMOUNT', $amount, true);
                 if (Tools::getValue('sendsms_products')) {
-                    Configuration::updateValue('PS_SENDSMS_PRODUCTS', implode("|", Tools::getValue('sendsms_products')), true);
+                    Configuration::updateValue('PS_SENDSMS_PRODUCTS', implode(',', Tools::getValue('sendsms_products')), true);
                 } else {
                     Configuration::updateValue('PS_SENDSMS_PRODUCTS', null);
                 }
                 if (Tools::getValue('sendsms_billing_states')) {
-                    Configuration::updateValue('PS_SENDSMS_STATES', implode("|", Tools::getValue('sendsms_billing_states')), true);
+                    Configuration::updateValue('PS_SENDSMS_STATES', implode(',', Tools::getValue('sendsms_billing_states')), true);
                 } else {
                     Configuration::updateValue('PS_SENDSMS_STATES', null);
                 }
@@ -366,7 +366,7 @@ class AdminCampaign extends ModuleAdminController
             }
         }
     }
-
+    
     private function filterPhones($periodStart, $periodEnd, $amount, $products, $billingStates, &$phones = array())
     {
         $sql = new DbQuery();
@@ -459,10 +459,5 @@ class AdminCampaign extends ModuleAdminController
             $sequence .= mt_rand(0, $highestDigit);
         }
         return $sequence;
-    }
-
-    private function _getSession()
-    {
-        return \PrestaShop\PrestaShop\Adapter\SymfonyContainer::getInstance()->get('session');
     }
 }

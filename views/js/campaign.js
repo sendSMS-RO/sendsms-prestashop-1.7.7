@@ -15,13 +15,13 @@ $(document).ready(function() {
     $('#check-price').on('click', function() {
         all = $('#sendsms_all_').is(':checked');
         if (all) {
-            if (typeof jQuery('select[id=sendsms_phone_numbers] > option') === "undefined") {
+            if (typeof jQuery('select[id=sendsms_phone_numbers] > option') === "undefined" || jQuery('select[id=sendsms_phone_numbers] > option').val() === null) {
                 phones = 0;
             } else {
                 phones = jQuery('select[id=sendsms_phone_numbers] > option').length;
             }
         } else {
-            if (typeof jQuery('#sendsms_phone_numbers').val() === "undefined") {
+            if (typeof jQuery('#sendsms_phone_numbers').val() === "undefined" || jQuery('#sendsms_phone_numbers').val() === null) {
                 phones = 0
             } else {
                 phones = jQuery('#sendsms_phone_numbers').val().length;
@@ -37,7 +37,6 @@ $(document).ready(function() {
             messages = Math.floor(messages);
             price = sendsms_price_per_phone;
             if (price > 0) {
-                //TO DO translation + show output to user
                 finalPrice = parseFloat(messages * price * phones).toPrecision(4) + " euro.";
                 alert(sendsms_text_estimate_price + finalPrice);
             } else {
@@ -56,15 +55,18 @@ $(document).ready(function() {
         content = $('#sendsms_message').val();
         phones = "";
         if (!all) {
-            phones = jQuery('#sendsms_phone_numbers').val().join("|");
+            if (jQuery('#sendsms_phone_numbers').val() !== null) {
+                phones = jQuery('#sendsms_phone_numbers').val().join("|");
+            }
         }
         $.ajax({
             type: 'POST',
             data: {
-                sendsms_security: sendsms_security,
+                method: "sendCampaign",
                 all: all,
                 content: content,
                 phones: phones,
+                sendsms_security: sendsms_security,
             },
             dataType: 'json',
             success: function(data) {
