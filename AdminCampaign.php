@@ -321,7 +321,7 @@ class AdminCampaign extends ModuleAdminController
                             $content,
                             $this->module->validatePhone($phone),
                             $from
-                        ), ',', '"', "\0");
+                        ));
                     }
                     $result = $this->module->createBatch($fileUrl);
                     fclose($file);
