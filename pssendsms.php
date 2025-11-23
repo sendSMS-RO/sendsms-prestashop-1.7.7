@@ -12,7 +12,6 @@
  *  @license   AFL
  */
 
-use PrestaShopBundle\Entity\Repository\TabRepositoryp;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -51,11 +50,11 @@ class PsSendSMS extends Module
 
         $this->name = 'pssendsms';
         $this->tab = 'advertising_marketing';
-        $this->version = '1.0.15';
+        $this->version = '1.0.16';
         $this->author = 'Any Place Media SRL';
         $this->module_key = '01417c91c848ebbc67f458d260e61f98';
         $this->need_instance = 0;
-        $this->ps_versions_compliancy = array('min' => '1.7.7', 'max' => '8.1.0');
+        $this->ps_versions_compliancy = array('min' => '1.7.7', 'max' => '8.3.0');
         $this->bootstrap = true;
 
         parent::__construct();
