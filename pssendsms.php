@@ -614,8 +614,7 @@ class PsSendSMS extends Module
 
     public function createBatch($fileUrl)
     {
-        //$start_time = "2970-01-01 02:00:00";
-        $start_time = "";
+        $start_time = date('Y-m-d H:i:s');
         $name = 'Prestashop - ' . _PS_BASE_URL_ . ' - ' . uniqid();
         $data = 'data=' . Tools::file_get_contents($fileUrl);
         $username = Configuration::get('PS_SENDSMS_USERNAME');
